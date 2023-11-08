@@ -132,6 +132,8 @@ class Keithley617():
     import keithley617 as ktl617
     k617 = ktl617.Keithley617()
     k617.comm_setup()
+    k617.start_up_auto_config('Voltmeter')
+    k617.run()
 
     '''
 

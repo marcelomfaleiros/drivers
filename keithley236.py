@@ -165,6 +165,7 @@ class Keithley236():
     import keithley236 as kt
     k = kt.Keithley236()
     k.gpib_set_up()
+    k.run(5, 0.5, 0.1)
 
     '''
 
