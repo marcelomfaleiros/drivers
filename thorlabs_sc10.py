@@ -1,5 +1,10 @@
-# -*- coding: utf-8 -*-
-# revisão 30/08/2023
+# encoding: utf-8
+
+""" 
+    Author: Marcelo Meira Faleiros
+    State University of Campinas, Brazil
+
+"""
 
 import pyvisa as visa
 from pyvisa import constants
