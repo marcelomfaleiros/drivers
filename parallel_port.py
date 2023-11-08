@@ -1,5 +1,10 @@
-# -*- coding: utf-8 -*-
-# revisão 07/10/2023
+# encoding: utf-8
+
+""" 
+    Author: Marcelo Meira Faleiros
+    State University of Campinas, Brazil
+
+"""
 
 from ctypes import windll
 import time

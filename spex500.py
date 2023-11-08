@@ -1,6 +1,10 @@
 # encoding: utf-8
-# Controla o monocromador Spex 500 via porta GPIB.
-# revisão 21/06/2023
+
+""" 
+    Author: Marcelo Meira Faleiros
+    State University of Campinas, Brazil
+
+"""
 
 import pyvisa as visa
 import time

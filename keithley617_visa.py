@@ -1,6 +1,9 @@
 # encoding: utf-8
-# Controla o eletrômetro Keithley 617 via porta GPIB.
-# revisão 19/06/2023
+""" 
+    Author: Marcelo Meira Faleiros
+    State University of Campinas
+    
+"""
 
 import pyvisa as visa
 import serial

@@ -1,3 +1,11 @@
+# encoding: utf-8
+
+""" 
+    Author: Marcelo Meira Faleiros
+    State University of Campinas, Brazil
+
+"""
+
 import pyqtgraph as pg
 from functools import partial
 import pyvisa as visa

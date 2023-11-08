@@ -1,3 +1,10 @@
+# encoding: utf-8
+""" 
+    Author: Marcelo Meira Faleiros
+    State University of Campinas
+    
+"""
+
 import serial
 import time
 

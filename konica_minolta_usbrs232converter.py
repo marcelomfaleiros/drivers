@@ -1,5 +1,10 @@
-# -*- coding: utf-8 -*-
-# revisão 27/01/2023
+# encoding: utf-8
+
+""" 
+    Author: Marcelo Meira Faleiros
+    State University of Campinas, Brazil
+
+"""
 
 import serial
 from serial.tools import list_ports

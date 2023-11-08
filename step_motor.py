@@ -1,6 +1,10 @@
-# -*- coding: utf-8 -*-
-# Controla um motor de passo genérico via porta paralela.
-# revisão 08/10/2023
+# encoding: utf-8
+
+""" 
+    Author: Marcelo Meira Faleiros
+    State University of Campinas, Brazil
+
+"""
 
 from parallel_port import *
 import time

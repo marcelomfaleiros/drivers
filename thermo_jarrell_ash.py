@@ -1,6 +1,10 @@
 # encoding: utf-8
-# Controla o monocromador Thermo Jarrell Ash via porta paralela.
-# revisão 09/05/2023
+
+""" 
+    Author: Marcelo Meira Faleiros
+    State University of Campinas, Brazil
+
+"""
 
 import step_motor as sm
 import time

@@ -1,6 +1,10 @@
 # encoding: utf-8
-# Controla o controlador de temperatura LakeShore 335 via porta GPIB.
-# revisão 27/01/2023
+
+""" 
+    Author: Marcelo Meira Faleiros
+    State University of Campinas, Brazil
+
+"""
 
 import pyvisa as visa
 
