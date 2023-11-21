@@ -73,22 +73,20 @@ class LIA_SR830():
 
     def gpib_set_up(self):
         self.rm = visa.ResourceManager()
-        self.sr830 = self.rm.open_resource('GPIB0::12')
+        self.sr830 = self.rm.open_resource('GPIB0::8') #Set gpib address
         self.sr830.read_termination = '\n'
         self.sr830.write_termination = '\n'
         
     def initialize(self):
-        srate = 'SRAT' + str(self.sample_rate[13])
         self.sr830.timeout = 20000
         self.sr830.write('OUTX 1')       #Set the Output Interface to GPIB (1).
         self.sr830.write('*CLS')         #Clear all status bytes.
-        self.sr830.write('REST')
-        self.sr830.write('FREQ 1500')
+        self.sr830.write('REST')         #Reset the scan. All stored data is lost.
         self.sr830.write('SEND 1')       #Set the End of Scan mode to Loop (1).
-        self.sr830.write(srate)          #Set the Data Sample Rate 16 Hz.
+        self.sr830.write('SRAT 13')      #Set the Data Sample Rate to 512 Hz
 
-    def reset():
-        self.sr830.write('*RST')
+    def reset(self):
+        self.sr830.write('*RST')         #Reset to default configuration
                 
     def time_constant(self, tc_index):
         tc_response = [0.05, 0.05, 0.05, 0.05, 0.05, 0.15, 0.5, 1.5,
@@ -96,24 +94,27 @@ class LIA_SR830():
         time_wait = tc_response[tc_index]
         time.sleep(time_wait) 
 
-    def measure(self, acqt):
-        self.sr830.write('STRT')
-        time.sleep(acqt)
-        self.sr830.write('PAUS')
-        self.sr830.write('SPTS?')
+    def measure(self, channel, acqstn_time):
+        self.sr830.write('STRT')         #Start or continue a scan
+        time.sleep(acqstn_time)          #wait measuring
+        self.sr830.write('PAUS')         #Pause during a scan.
+        self.sr830.write('SPTS?')        #Query the number of points stored in the Display buffer
         time.sleep(0.1)
-        length = self.sr830.read()
-        readbuff_ch1 = 'TRCA? 1,0,'+ length
-        self.sr830.write(readbuff_ch1)
+        length = self.sr830.read()       #read the number of points stored in the Display buffer
+        if channel == 'ch1':
+            read_buffer = 'TRCA? 1,0,'+ length
+        elif channel == 'ch2':
+            read_buffer = 'TRCA? 2,0,'+ length
+        self.sr830.write(read_buffer)   #Query points from Display ch 1 buffer in ASCII floating point.
         time.sleep(0.1)
-        y_result = self.sr830.read()
+        y_result = self.sr830.read()     #Read points from Display ch 1 buffer in ASCII floating point.
         time.sleep(0.1)
-        y_list = y_result.split(',')
-        del y_list[-1]        
+        y_list = y_result.split(',')     #format data into a string list        
+        del y_list[-1]
         for i in range(len(y_list)):
-            y_list[i] = float(y_list[i])
-        self.sr830.write('REST')
-        mean = statistics.mean(y_list)
+            y_list[i] = float(y_list[i]) #format data into a float list
+        self.sr830.write('REST')         #Reset the scan. All stored data is lost.
+        mean = statistics.mean(y_list)   #compute the mean of the data
 
         return mean
         
