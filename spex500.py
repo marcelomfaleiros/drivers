@@ -167,21 +167,13 @@ class Spex500():
         self.data.append(self.spex.query("z"))                #read MAIN version number
         self.data.append(self.spex.query("y"))                #read BOOT version number
         return self.data    
-    
-    def rs232_start_up(self):
-        self.spex.write(" ")             #send WHERE AM I command
-        respWAI = self.spex.read()       #response will be "B" for BOOT or "F" for MAIN
-        if respWAI == "B":
-            self.spex.write("O2000" + "")     #send "O2000<null>" - transfer control from BOOT to MAIN program
-            self.spex.read()
-        time.sleep(0.5)        
-        self.spex.write("A")                    #initialize mono
-        self.spex.read()
-        self.spex.timeout = 30000
  
-    def start_up(self):        
-        self.spex.write("222")
+    def start_up(self):    
+        if self.comm_mode == 'gpib':
+            self.spex.write("222")
         self.spex.write(" ")             #send WHERE AM I command
+        if self.comm_mode == 'rs232':
+            self.spex.write("247")
         respWAI = self.spex.read()       #response will be "B" for BOOT or "F" for MAIN
         if respWAI == "B":
             self.spex.write("O2000" + "")     #send "O2000<null>" - transfer control from BOOT to MAIN program
