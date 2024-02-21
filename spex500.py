@@ -1,16 +1,18 @@
 # encoding: utf-8
 
-""" 
-    Author: Marcelo Meira Faleiros
-    State University of Campinas, Brazil
-
 """
+     Author: Marcelo Meira Faleiros
+     State University of Campinas, Brazil
+
+     """
 
 import pyvisa as visa
 import time
 
 class Spex500():
     '''
+    Controla o monocromador Spex 500 via porta GPIB ou RS232.
+
     -------------------------------------------------------------------------------------------------------
     Command                  | Host sends                  | Spex Controller sends              
     -------------------------------------------------------------------------------------------------------
@@ -146,16 +148,38 @@ class Spex500():
     def __init__(self):
         self.data = ['Spex', 'model 232', 's/n 0289']        
         
-    def set_up(self):
+    def set_up(self, comm_mode=str):
         self.rm = visa.ResourceManager()
-        self.spex = self.rm.open_resource('GPIB0::2')
+        if self.comm_mode == 'gpib':
+            self.spex = self.rm.open_resource('GPIB0::2')
+        if self.comm_mode == 'rs232':
+            self.spex = self.rm.open_resource('ASRL9::INSTR')
+            self.spex.write_termination='\r\n'
+            self.spex.read_termination='\r\n'
+            self.spex.baud_rate = 19200
+            self.spex.data_bits = 8
+            self.spex.parity = visa.constants.Parity.none
+            self.spex.stop_bits = visa.constants.StopBits.one
+            self.spex.flow_control = visa.constants.VI_ASRL_FLOW_XON_XOFF
+            self.spex.timeout = 25000
         
     def identity(self):        
         self.data.append(self.spex.query("z"))                #read MAIN version number
         self.data.append(self.spex.query("y"))                #read BOOT version number
         return self.data    
+    
+    def rs232_start_up(self):
+        self.spex.write(" ")             #send WHERE AM I command
+        respWAI = self.spex.read()       #response will be "B" for BOOT or "F" for MAIN
+        if respWAI == "B":
+            self.spex.write("O2000" + "")     #send "O2000<null>" - transfer control from BOOT to MAIN program
+            self.spex.read()
+        time.sleep(0.5)        
+        self.spex.write("A")                    #initialize mono
+        self.spex.read()
+        self.spex.timeout = 30000
  
-    def gpib_start_up(self):        
+    def start_up(self):        
         self.spex.write("222")
         self.spex.write(" ")             #send WHERE AM I command
         respWAI = self.spex.read()       #response will be "B" for BOOT or "F" for MAIN
