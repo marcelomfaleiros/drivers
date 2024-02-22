@@ -143,17 +143,29 @@ class Spex500():
          Example:            | Send "e0"                              | Receive "o"
     ---------------------------------------------------------------------------------------------------
     ---------------------------------------------------------------------------------------------------
+
+    Usage
+    -----
+
+    import spex500 as spex
+    spx = spex.Spex500()
+    spx.set_up('rs232')
+    spx.start_up('rs232')
+    spx.calibration(400)
+    spx.run(500)
+
     '''   
     
     def __init__(self):
         self.data = ['Spex', 'model 232', 's/n 0289']        
         
     def set_up(self, comm_mode=str):
+        self.comm_mode = comm_mode
         self.rm = visa.ResourceManager()
-        if self.comm_mode == 'gpib':
+        if comm_mode == 'gpib':
             self.spex = self.rm.open_resource('GPIB0::2')
-        if self.comm_mode == 'rs232':
-            self.spex = self.rm.open_resource('ASRL9::INSTR')
+        if comm_mode == 'rs232':
+            self.spex = self.rm.open_resource('ASRL3::INSTR')
             self.spex.write_termination='\r\n'
             self.spex.read_termination='\r\n'
             self.spex.baud_rate = 19200
