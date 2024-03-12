@@ -6,7 +6,7 @@
 
      """
 
-import pyvisa as visa
+import serial
 import time
 
 class Spex500():
@@ -149,8 +149,8 @@ class Spex500():
 
     import spex500 as spex
     spx = spex.Spex500()
-    spx.set_up('rs232')
-    spx.start_up('rs232')
+    spx.set_up()
+    spx.start_up()
     spx.calibration(400)
     spx.run(500)
 
@@ -159,57 +159,51 @@ class Spex500():
     def __init__(self):
         self.data = ['Spex', 'model 232', 's/n 0289']        
         
-    def set_up(self, comm_mode=str):
-        self.comm_mode = comm_mode
-        self.rm = visa.ResourceManager()
-        if comm_mode == 'gpib':
-            self.spex = self.rm.open_resource('GPIB0::2')
-        if comm_mode == 'rs232':
-            self.spex = self.rm.open_resource('ASRL3::INSTR')
-            self.spex.write_termination='\r\n'
-            self.spex.read_termination='\r\n'
-            self.spex.baud_rate = 19200
-            self.spex.data_bits = 8
-            self.spex.parity = visa.constants.Parity.none
-            self.spex.stop_bits = visa.constants.StopBits.one
-            self.spex.flow_control = visa.constants.VI_ASRL_FLOW_XON_XOFF
-            self.spex.timeout = 25000
+    def set_up(self):
+        self.spex = serial.Serial(timeout = 25000)
+        self.spex.port = 'COM3'
+        self.spex.baud_rate = 19200
+        self.spex.bytesize = 8
+        self.spex.parity = 'N'
+        self.spex.stopbits = 1
+        self.spex.dsrdtr = True
         
-    def identity(self):        
-        self.data.append(self.spex.query("z"))                #read MAIN version number
-        self.data.append(self.spex.query("y"))                #read BOOT version number
+    def identity(self):   
+        self.spex.write(b"z")     
+        self.data.append(self.spex.read())                #read MAIN version number
+        self.spex.write(b"y")
+        self.data.append(self.spex.read())                #read BOOT version number
         return self.data    
  
     def start_up(self):    
-        if self.comm_mode == 'gpib':
-            self.spex.write("222")
-        self.spex.write(" ")             #send WHERE AM I command
-        if self.comm_mode == 'rs232':
-            self.spex.write("247")
+        self.spex.write(b" ")             #send WHERE AM I command
+        self.spex.read()
+        self.spex.write(b"247")           #set inteligent mode for rs232
         respWAI = self.spex.read()       #response will be "B" for BOOT or "F" for MAIN
         if respWAI == "B":
-            self.spex.write("O2000" + "")     #send "O2000<null>" - transfer control from BOOT to MAIN program
+            self.spex.write(b"O2000" + "")     #send "O2000<null>" - transfer control from BOOT to MAIN program
             self.spex.read()
         time.sleep(0.5)        
-        self.spex.write("A")                    #initialize mono
+        self.spex.write(b"A")                    #initialize mono
         self.spex.read()
         self.spex.timeout = 30000
        
     def busy_status(self):
-        status = self.spex.query("E")
+        self.spex.write(b"E")
+        status = self.spex.read()
         while status != "oz":                            #while motor busy
             status = self.spex.query("E")                #check motor status                                        
     
     def calibration(self, dsp_wavelength_A):    
-        self.spex.write("B0,1000,36000,3000")   #set motor speed
+        self.spex.write(b"B0,1000,36000,3000")   #set motor speed
         self.spex.read()
         Gwl = dsp_wavelength_A                  #wavelength (wl) A display
         Ground = round(Gwl * 4000)              #wl to steps conversion
-        self.spex.write("G0," + str(Ground))    #setting motor position
+        self.spex.write(b"G0," + str(Ground))    #setting motor position
         self.spex.read()
   
     def run(self, F):                           #F = target wl
-        self.spex.write("H0")                   #motor read position
+        self.spex.write(b"H0")                   #motor read position
         time.sleep(0.1)
         Houti = self.spex.read()
         Houticond = Houti[1:len(Houti)]         #motor position without termination character
@@ -218,19 +212,19 @@ class Spex500():
         Fin = Froundi - Hinti                   #compute steps to run
         if Fin < 0:                             #if target wl < current wl
             Fin = Fin - 20000                   #5nm backlash
-            self.spex.write("F0," + str(Fin))   #motor move relative
+            self.spex.write(b"F0," + str(Fin))   #motor move relative
             time.sleep(0.1)
             self.spex.read()
             self.busy_status()                  #motor busy check  
-            self.spex.write("F0," + str(20000)) #backlash
+            self.spex.write(b"F0," + str(20000)) #backlash
             self.spex.read()
             self.busy_status()
         else:
-            self.spex.write("F0," + str(Fin))   #if target wl > current wl
+            self.spex.write(b"F0," + str(Fin))   #if target wl > current wl
             time.sleep(0.1)
             self.spex.read()
             self.busy_status()
 
     def stop(self):
-        self.spex.write("L")
+        self.spex.write(b"L")
         self.spex.read()
