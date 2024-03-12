@@ -166,44 +166,45 @@ class Spex500():
         self.spex.bytesize = 8
         self.spex.parity = 'N'
         self.spex.stopbits = 1
-        self.spex.dsrdtr = True
+        self.spex.dtr = True
         
     def identity(self):   
-        self.spex.write(b"z")     
+        self.spex.write(b"z\r")     
         self.data.append(self.spex.read())                #read MAIN version number
-        self.spex.write(b"y")
+        self.spex.write(b"y\r")
         self.data.append(self.spex.read())                #read BOOT version number
         return self.data    
  
     def start_up(self):    
-        self.spex.write(b" ")             #send WHERE AM I command
+        self.spex.write(b" \r")             #send WHERE AM I command
         self.spex.read()
-        self.spex.write(b"247")           #set inteligent mode for rs232
+        self.spex.write(b"247\r")           #set inteligent mode for rs232
         respWAI = self.spex.read()       #response will be "B" for BOOT or "F" for MAIN
         if respWAI == "B":
-            self.spex.write(b"O2000" + "")     #send "O2000<null>" - transfer control from BOOT to MAIN program
+            self.spex.write(b"O2000" + ""+'\r')     #send "O2000<null>" - transfer control from BOOT to MAIN program
             self.spex.read()
         time.sleep(0.5)        
-        self.spex.write(b"A")                    #initialize mono
+        self.spex.write(b"A\r")                    #initialize mono
         self.spex.read()
         self.spex.timeout = 30000
        
     def busy_status(self):
-        self.spex.write(b"E")
+        self.spex.write(b"E\r")
         status = self.spex.read()
-        while status != "oz":                            #while motor busy
-            status = self.spex.query("E")                #check motor status                                        
+        while status != "oz":
+            self.spex.write(b"E\r")                            #while motor busy
+            status = self.spex.read()                #check motor status                                        
     
     def calibration(self, dsp_wavelength_A):    
-        self.spex.write(b"B0,1000,36000,3000")   #set motor speed
+        self.spex.write(b"B0,1000,36000,3000\r")   #set motor speed
         self.spex.read()
         Gwl = dsp_wavelength_A                  #wavelength (wl) A display
         Ground = round(Gwl * 4000)              #wl to steps conversion
-        self.spex.write(b"G0," + str(Ground))    #setting motor position
+        self.spex.write(b"G0," + str(Ground)+'\r')    #setting motor position
         self.spex.read()
   
     def run(self, F):                           #F = target wl
-        self.spex.write(b"H0")                   #motor read position
+        self.spex.write(b"H0\r")                   #motor read position
         time.sleep(0.1)
         Houti = self.spex.read()
         Houticond = Houti[1:len(Houti)]         #motor position without termination character
@@ -212,19 +213,19 @@ class Spex500():
         Fin = Froundi - Hinti                   #compute steps to run
         if Fin < 0:                             #if target wl < current wl
             Fin = Fin - 20000                   #5nm backlash
-            self.spex.write(b"F0," + str(Fin))   #motor move relative
+            self.spex.write(b"F0," + str(Fin)+'\r')   #motor move relative
             time.sleep(0.1)
             self.spex.read()
             self.busy_status()                  #motor busy check  
-            self.spex.write(b"F0," + str(20000)) #backlash
+            self.spex.write(b"F0," + str(20000)+'\r') #backlash
             self.spex.read()
             self.busy_status()
         else:
-            self.spex.write(b"F0," + str(Fin))   #if target wl > current wl
+            self.spex.write(b"F0," + str(Fin)+'\r')   #if target wl > current wl
             time.sleep(0.1)
             self.spex.read()
             self.busy_status()
 
     def stop(self):
-        self.spex.write(b"L")
+        self.spex.write(b"L\r")
         self.spex.read()
