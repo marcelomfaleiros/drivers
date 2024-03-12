@@ -162,7 +162,7 @@ class Spex500():
     def set_up(self):
         self.spex = serial.Serial(timeout = 25000)
         self.spex.port = 'COM3'
-        self.spex.baud_rate = 19200
+        self.spex.baudrate = 19200
         self.spex.bytesize = 8
         self.spex.parity = 'N'
         self.spex.stopbits = 1
@@ -227,5 +227,5 @@ class Spex500():
             self.busy_status()
 
     def stop(self):
-        self.spex.write(b"L\r")
+        self.spex.write(b"L")
         self.spex.read()
