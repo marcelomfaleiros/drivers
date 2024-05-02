@@ -162,10 +162,11 @@ class Spex500():
     def set_up(self):
         self.spex = serial.Serial(timeout = 25000)
         self.spex.port = 'COM3'
-        self.spex.baudrate = 9600
+        self.spex.baudrate = 4800
         self.spex.bytesize = 8
         self.spex.parity = 'N'
         self.spex.stopbits = 1
+        self.spex.rts = False
         self.spex.dtr = True
         
     def identity(self):   
