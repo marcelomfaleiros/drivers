@@ -4,10 +4,10 @@
      Author: Marcelo Meira Faleiros
      State University of Campinas, Brazil
 
-     """
+"""
 
 import pyvisa as visa
-import time
+from time import sleep
 
 class Spex500():
     '''
@@ -149,8 +149,8 @@ class Spex500():
 
     import spex500 as spex
     spx = spex.Spex500()
-    spx.set_up('rs232')
-    spx.start_up('rs232')
+    spx.set_up()
+    spx.start_up()
     spx.calibration(400)
     spx.run(500)
 
@@ -162,19 +162,16 @@ class Spex500():
     def set_up(self, comm_mode=str):
         self.comm_mode = comm_mode
         self.rm = visa.ResourceManager()
-        if comm_mode == 'gpib':
-            self.spex = self.rm.open_resource('GPIB0::2')
-        if comm_mode == 'rs232':
-            self.spex = self.rm.open_resource('ASRL3::INSTR')
-            self.spex.write_termination='\r'
-            self.spex.read_termination='\r'
-            self.spex.baud_rate = 19200
-            self.spex.data_bits = 8
-            self.spex.parity = visa.constants.Parity.none
-            self.spex.stop_bits = visa.constants.StopBits.one
-            #self.spex.flow_control = visa.constants.VI_ATTR_ASRL_DTR_STATE
-            #self.spex.constants.VI_ATTR_ASRL_DTR_STATE = True
-            self.spex.timeout = 25000
+        self.spex = self.rm.open_resource('ASRL3::INSTR')
+        self.spex.write_termination='\r'
+        self.spex.read_termination='\r'
+        self.spex.baud_rate = 19200
+        self.spex.data_bits = 8
+        self.spex.parity = visa.constants.Parity.none
+        self.spex.stop_bits = visa.constants.StopBits.one
+        #self.spex.flow_control = visa.constants.VI_ATTR_ASRL_DTR_STATE
+        #self.spex.constants.VI_ATTR_ASRL_DTR_STATE = True
+        self.spex.timeout = 25000
         
     def identity(self):        
         self.data.append(self.spex.query("z"))                #read MAIN version number
@@ -182,19 +179,18 @@ class Spex500():
         return self.data    
  
     def start_up(self):    
+        self.spex.flush()
         autobaud = ""
-        if self.comm_mode == 'gpib':
-            self.spex.write("222")
         while autobaud != "*":
-            self.spex.write(" ")             #send WHERE AM I command
-            autobaud = self.spex.read()
-        if self.comm_mode == 'rs232':
-            self.spex.write("247")
-        respWAI = self.spex.read()       #response will be "B" for BOOT or "F" for MAIN
+            self.spex.write(" ")              #send WHERE AM I command
+            sleep(0.5)
+            autobaud = self.spex.read()        #response will be "B" for BOOT or "F" for MAIN
+        self.spex.write("247")
+        self.spex.write(" ")
         if respWAI == "B":
             self.spex.write("O2000" + "")     #send "O2000<null>" - transfer control from BOOT to MAIN program
             self.spex.read()
-        time.sleep(0.5)        
+        sleep(0.5)        
         self.spex.write("A")                    #initialize mono
         self.spex.read()
         self.spex.timeout = 30000
