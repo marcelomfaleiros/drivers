@@ -11,7 +11,7 @@ import time
 
 class StepMotor(ParallelPort):
     
-    '''
+    """
     Each step motor needs a sequence of digital steps to be controlled.
     We can set four parallel pins, one for each winding, defined by within the sets:
     
@@ -29,7 +29,7 @@ class StepMotor(ParallelPort):
 
     step.clockwise(200)
     
-    '''
+    """
        
     def __init__(self, step_time, parallel_pin_set, parallel_address):        
         super().__init__(parallel_address)       

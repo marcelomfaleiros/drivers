@@ -11,8 +11,7 @@ import time
 
 class ParallelPort():
     
-    '''
-    Parallel Data Pins
+    """Parallel Data Pins
 
     Usage with inpout32.dll library:
 
@@ -26,7 +25,7 @@ class ParallelPort():
 
     Adress 0x378 - DATA pins
     ----------------------------------------------
-    dec \ pin  | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 |   
+    dec - pin  | 9 | 8 | 7 | 6 | 5 | 4 | 3 | 2 |   
     ----------------------------------------------    
         0      | L | L | L | L | L | L | L | L | 
         1      | L | L | L | L | L | L | L | H | 
@@ -42,7 +41,7 @@ class ParallelPort():
 
     Adress 0x37f - CONTROL pins
     -------------------------------------------
-    dec \ pin  |  1  |  14  |  16  |  17  |
+    dec - pin  |  1  |  14  |  16  |  17  |
     -------------------------------------------
         0      |  H  |   H  |   L  |   H  | 
         1      |  L  |   H  |   L  |   H  |
@@ -72,9 +71,9 @@ class ParallelPort():
 
     1. Download the latest “binaries” archive from the InpOut32 site
     2. Extract the files
-    3. Run the Win32\InstallDriver.exe file (even though it’s in the Win32 directory)
+    3. Run the Win32\\InstallDriver.exe file (even though it’s in the Win32 directory)
     4. Rename the 64-bit file inpoutx64.dll to inpout32.dll
-    5. Place this file in C:\Windows\System32\
+    5. Place this file in C:\\Windows\\System32\\
     6. Use the Device Manager to get the parallel port address, e.g. 0x378 or 0xCFF4,
         and set this as TRIGGER_ADDRESS in the config.
     (Source: https://labsn.github.io/expyfun/parallel_installation.html)
@@ -86,23 +85,24 @@ class ParallelPort():
     import parallel_port as pp
     parallel = pp.ParallelPort(0x378)
     parallel.pin(2)
-    
-    '''   
+    """   
 
     pin_set_0x378 = [2, 3, 4, 5, 6, 7, 8, 9]   #parallel DATA pins 
     pin_set_0x37f = [1, 14, 16, 17]            #parallel CONTROL pins
     dec_0x378 = [1, 2, 4, 8, 16, 32, 64, 128]  #DECIMAL to activate the DATA pins
     dec_0x37f = [10, 9, 15, 13]                #DECIMAL to activate the CONTROL pins
-    setpin_command = windll.inpout32.Out32     #command to activate the pin
+    
     
     def __init__(self, address):
         self.address = address                        #parallel port ADDRESS
+
+        self.setpin_command = windll.inpout32.Out32     #command to activate the pin
         
     def all_pin_low(self):                            #set all pins LOW state
         if self.address == 0x378:                     #if DATA pins setted
-            self.setpin(self.address, 0)
+            self.setpin_command(self.address, 0)
         elif self.address == 0x37f:                   #if CONTROL pins setted
-            self.setpin(self.address, 11)
+            self.setpin_command(self.address, 11)
 
     def all_pin_high(self):                           #set all pins HIGH state
         if self.address == 0x378:                     #if DATA pins setted
