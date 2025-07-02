@@ -91,13 +91,11 @@ class ParallelPort():
     pin_set_0x37f = [1, 14, 16, 17]            #parallel CONTROL pins
     dec_0x378 = [1, 2, 4, 8, 16, 32, 64, 128]  #DECIMAL to activate the DATA pins
     dec_0x37f = [10, 9, 15, 13]                #DECIMAL to activate the CONTROL pins
-    
+    self.setpin_command = windll.inpout32.Out32     #command to activate the pin    
     
     def __init__(self, address):
         self.address = address                        #parallel port ADDRESS
-
-        self.setpin_command = windll.inpout32.Out32     #command to activate the pin
-        
+            
     def all_pin_low(self):                            #set all pins LOW state
         if self.address == 0x378:                     #if DATA pins setted
             self.setpin_command(self.address, 0)
